@@ -1,0 +1,25 @@
+Package: RareComb
+Title: Combinatorial and statistical analyses of rare events
+Version: 1.0.0.0000
+Authors@R: 
+    person(given = "Vijay Kumar",
+           family = "Pounraja",
+           role = c("aut", "cre"),
+           email = "fvxm915@psu.edu",
+           comment = c(ORCID = "0000-0002-9710-189X"))
+Description: This package analyzes sparse Boolean input dataframe using the priori algorithm and binomial tests to identify combinations of features significantly enriched for cooccurring events.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 2.10)
+Imports: 
+    magrittr,
+    arules,
+    dplyr,
+    methods,
+    pwr,
+    stringr,
+    tidyr,
+    reshape2,
+    sqldf
+RoxygenNote: 7.1.1
