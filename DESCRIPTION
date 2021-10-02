@@ -5,9 +5,9 @@ Authors@R:
     person(given = "Vijay Kumar",
            family = "Pounraja",
            role = c("aut", "cre"),
-           email = "fvxm915@psu.edu",
+           email = "vijaykumar.mp@gmail.com",
            comment = c(ORCID = "0000-0002-9710-189X"))
-Description: This package analyzes sparse Boolean input dataframe using the priori algorithm and binomial tests to identify combinations of features significantly enriched for cooccurring events.
+Description: This package analyzes sparse Boolean input using the apriori algorithm and binomial tests to identify combinations of features (genes, variants etc) significantly enriched for simultaneous mutations/events.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

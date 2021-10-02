@@ -3,8 +3,7 @@
 
 # Citation
 
-[A general framework for identifying rare variant combinations in complex disorders]()
-
+[A general framework for identifying rare variant combinations in complex disorders](https://doi.org/10.1101/2021.10.01.462832)
 Vijay Kumar Pounraja, Santhosh Girirajan
 
 
