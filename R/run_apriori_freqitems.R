@@ -47,6 +47,9 @@ run_apriori_freqitems <- function(apriori_input_df, combo_length, support_thresh
     if (length(all_apriori_freqitems) == 0) {
       all_apriori_freqitems_df = data.frame(matrix(ncol=length(c(paste0('Item_', seq(1:combo_length)), 'Obs_Count_Combo')), nrow=0))
       colnames(all_apriori_freqitems_df) = c(paste0('Item_', seq(1:combo_length)), 'Obs_Count_Combo')
+      for (col in colnames(all_apriori_freqitems)[1:length(colnames(all_apriori_freqitems))-1]) {
+        all_apriori_freqitems[, col] = as.character(all_apriori_freqitems[, col])
+      }
       return(all_apriori_freqitems_df)
     }
 
