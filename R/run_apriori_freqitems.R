@@ -42,6 +42,13 @@ run_apriori_freqitems <- function(apriori_input_df, combo_length, support_thresh
                                                appearance = list(items=c(paste0(input_colname_list, "=1"), paste0(output_colname_list, "=1"))))
       all_apriori_freqitems <- subset(all_apriori_freqitems, subset = items %in% c(paste0(output_colname_list, "=1")))
     }
+    
+    # if no freqitems found
+    if (length(all_apriori_freqitems) == 0) {
+      all_apriori_freqitems_df = data.frame(matrix(ncol=length(c(paste0('Item_', seq(1:combo_length)), 'Obs_Count_Combo')), nrow=0))
+      colnames(all_apriori_freqitems_df) = c(paste0('Item_', seq(1:combo_length)), 'Obs_Count_Combo')
+      return(all_apriori_freqitems_df)
+    }
 
     all_apriori_freqitems_df <- arules::DATAFRAME(all_apriori_freqitems)
     all_apriori_freqitems_df$items <- stringr::str_replace_all(all_apriori_freqitems_df$items, "[{}]", "")
