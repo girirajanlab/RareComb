@@ -176,12 +176,8 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
                                                                            p = all_case_cont_freqitems_df$Cont_Exp_Prob_Combo,
                                                                            alternative = "greater", conf.level = 0.95, SIMPLIFY = FALSE))
 
-  filt_case_cont_freqitems_df <- subset(all_case_cont_freqitems_df, (all_case_cont_freqitems_df[["Case_pvalue_more"]] < pval_filter_threshold &
-                                                                       all_case_cont_freqitems_df[["Temp_Control_pvalue_more"]] < pval_filter_threshold))
-  sel_case_cont_freqitems_df <- subset(all_case_cont_freqitems_df, !(all_case_cont_freqitems_df[["Case_pvalue_more"]] < pval_filter_threshold &
-                                                                       all_case_cont_freqitems_df[["Temp_Control_pvalue_more"]] < pval_filter_threshold))
+  sel_case_cont_freqitems_df <- all_case_cont_freqitems_df
 
-  print(paste0('Number of combinations that are enriched in both cases and controls: ', dim(filt_case_cont_freqitems_df)[1]))
   print(paste0('Number of combinations considered for multiple testing correction: ', dim(sel_case_cont_freqitems_df)[1]))
 
   sel_case_cont_freqitems_df$Case_Adj_Pval_bonf <- round(p.adjust(sel_case_cont_freqitems_df$Case_pvalue_more , "bonferroni"), 3)
