@@ -172,10 +172,18 @@ compare_enrichment_depletion <- function(boolean_input_df, combo_length, min_ind
                                                                            p = all_case_cont_freqitems_df$Cont_Exp_Prob_Combo,
                                                                            alternative = "less", conf.level = 0.95, SIMPLIFY = FALSE))
 
-  all_sig_case_cont_freqitems_df <- subset(all_case_cont_freqitems_df, (all_case_cont_freqitems_df[["Case_pvalue_more"]] < pval_filter_threshold &
-                                                                        all_case_cont_freqitems_df[["Temp_Control_pvalue_less"]] < pval_filter_threshold))
+  print(paste0('Number of combinations considered for multiple testing correction: ', dim(all_case_cont_freqitems_df)[1]))
 
-  print(paste0('Number of combinations considered for multiple testing correction: ', dim(all_sig_case_cont_freqitems_df)[1]))
+  all_case_cont_freqitems_df$Case_Adj_Pval_bonf <- round(p.adjust(all_case_cont_freqitems_df$Case_pvalue_more , "bonferroni"), 3)
+  all_case_cont_freqitems_df$Case_Adj_Pval_BH <- round(p.adjust(all_case_cont_freqitems_df$Case_pvalue_more , "BH"), 3)
+
+  if (adj_pval_type == 'BH') {
+    all_sig_case_cont_freqitems_df <- subset(all_case_cont_freqitems_df, (all_case_cont_freqitems_df[["Case_Adj_Pval_BH"]] < pval_filter_threshold &
+                                                                          all_case_cont_freqitems_df[["Temp_Control_pvalue_less"]] < pval_filter_threshold))
+  } else if (adj_pval_type == 'bonferroni') {
+    all_sig_case_cont_freqitems_df <- subset(all_case_cont_freqitems_df, (all_case_cont_freqitems_df[["Case_Adj_Pval_bonf"]] < pval_filter_threshold &
+                                                                          all_case_cont_freqitems_df[["Temp_Control_pvalue_less"]] < pval_filter_threshold))
+  }
 
   sig_comb_count <- dim(all_sig_case_cont_freqitems_df)[1]
   print(paste0('Number of combinations that are enriched in cases and depleted in controls: ', sig_comb_count))

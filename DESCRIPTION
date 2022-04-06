@@ -1,13 +1,13 @@
 Package: RareComb
-Title: Combinatorial and statistical analyses of rare events
-Version: 1.0.0.0000
+Title: Combinatorial and Statistical Analyses of Rare Events
+Version: 1.1
 Authors@R: 
     person(given = "Vijay Kumar",
            family = "Pounraja",
            role = c("aut", "cre"),
            email = "vijaykumar.mp@gmail.com",
            comment = c(ORCID = "0000-0002-9710-189X"))
-Description: This package analyzes sparse Boolean input using the apriori algorithm and binomial tests to identify combinations of features (genes, variants etc) significantly enriched for simultaneous mutations/events.
+Description: A custom implementation of the apriori algorithm and binomial tests to identify combinations of features (genes, variants etc) significantly enriched for simultaneous mutations/events from sparse Boolean input, see Vijay Kumar Pounraja, Santhosh Girirajan (2021). Version 1.1 includes a minor adjustment to the number of combinations to be considered for multiple testing correction. This updated version is more conservative in its approach and hence more selective. <doi:10.1101/2021.10.01.462832>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
