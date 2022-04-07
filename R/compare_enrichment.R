@@ -55,9 +55,7 @@
 #' @import sqldf
 #' @export
 
-compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshold, max_freq_threshold,
-                               input_format = 'Input_', output_format = 'Output_', pval_filter_threshold = 0.05,
-                               adj_pval_type = 'BH', min_power_threshold = 0.7, sample_names_ind = 'N') {
+compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshold, max_freq_threshold, input_format = 'Input_', output_format = 'Output_', pval_filter_threshold = 0.05, adj_pval_type = 'BH', min_power_threshold = 0.7, sample_names_ind = 'N') {
 
   # Identify all the input and output variables
   input_colname_list <- colnames(boolean_input_df)[grepl(paste0("^" ,input_format), colnames(boolean_input_df))]
