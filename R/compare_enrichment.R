@@ -162,6 +162,9 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
   sel_case_cont_freqitems_df <- all_case_cont_freqitems_df
 
   print(paste0('Number of combinations considered for multiple testing correction: ', dim(sel_case_cont_freqitems_df)[1]))
+  
+  # Create variable for number of tests done
+  number_of_tests = dim(sel_case_cont_freqitems_df)[1]
 
   sel_case_cont_freqitems_df$Case_Adj_Pval_bonf <- round(p.adjust(sel_case_cont_freqitems_df$Case_pvalue_more , "bonferroni"), 3)
   sel_case_cont_freqitems_df$Case_Adj_Pval_BH <- round(p.adjust(sel_case_cont_freqitems_df$Case_pvalue_more , "BH"), 3)
@@ -241,6 +244,9 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 
     if (dim(output_sig_case_cont_freqitems_df)[1] > 0) {
       if (sample_names_ind == 'N') {
+        # add a column for number of tests done
+        output_sig_case_cont_freqitems_df['Num_tests'] = number_of_tests
+        
         # Return the output without adding sample names
         output_sig_case_cont_freqitems_df
       } else if (sample_names_ind == 'Y') {
@@ -300,6 +306,9 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
           find_samples_step7_df <- reshape2::dcast(find_samples_step6_df, Item_1 + Item_2 + Item_3 + Item_4 + Item_5 ~ Sample_Type, value.var = "Sample_List")
           out_sig_case_cont_freqitems_w_samples_df <- dplyr::left_join(output_sig_case_cont_freqitems_df, find_samples_step7_df, by = c("Item_1", "Item_2", "Item_3", "Item_4", "Item_5"))
         }
+        
+        # add a column for number of tests done
+        out_sig_case_cont_freqitems_w_samples_df['Num_tests'] = number_of_tests
 
         # Return all significant combinations with corresponding sample names as the output
         out_sig_case_cont_freqitems_w_samples_df
@@ -309,6 +318,10 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
    } else {
      warning("No significant combinations that meet the specified power threshold")
      warning("Returning ONLY the non-significant combinations")
+     
+     # add a column for number of tests done
+     sel_case_cont_freqitems_df['Num_tests'] = number_of_tests
+      
      # Return all non-significant combinations as the output
      sel_case_cont_freqitems_df
    }
@@ -317,6 +330,10 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
   } else {
     warning("No significant combinations were found after multiple testing correction")
     warning("Returning ONLY the non-significant combinations")
+    
+    # add a column for number of tests done
+    sel_case_cont_freqitems_df['Num_tests'] = number_of_tests
+    
     # Return all non-significant combinations as the output
     sel_case_cont_freqitems_df
   } # End if (multtest_sig_comb_count > 0)
