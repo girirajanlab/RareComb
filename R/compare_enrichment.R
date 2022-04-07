@@ -312,19 +312,19 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 
 				# Return all significant combinations with corresponding sample names as the output
 				out_sig_case_cont_freqitems_w_samples_df
-		}
+			} # End else if (sample_names_ind == 'Y')
 
 
-	 } else {
-		 warning("No significant combinations that meet the specified power threshold")
-		 warning("Returning ONLY the non-significant combinations")
-		 
-		 # add a column for number of tests done
-		 sel_case_cont_freqitems_df['Num_tests'] = number_of_tests
-			
-		 # Return all non-significant combinations as the output
-		 sel_case_cont_freqitems_df
-	 }
+		} else {
+			warning("No significant combinations that meet the specified power threshold")
+			warning("Returning ONLY the non-significant combinations")
+
+			# add a column for number of tests done
+			sel_case_cont_freqitems_df['Num_tests'] = number_of_tests
+
+			# Return all non-significant combinations as the output
+			sel_case_cont_freqitems_df
+		} # End if (dim(output_sig_case_cont_freqitems_df)[1] > 0)
 
 
 	} else {
