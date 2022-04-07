@@ -213,6 +213,11 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 			table(refine_freqitems_df$Cont_Ref_Count_Combo)
 			sel_refine_freqitems_df <- subset(refine_freqitems_df, refine_freqitems_df[["Cont_Ref_Count_Combo"]] <= 1)
 
+			# added this to avoid problems with custom_left_join when sel_refine_freqitems_df is empty
+			for (col in colnames(sel_refine_freqitems_df)[1:length(colnames(sel_refine_freqitems_df))-1]) {
+				sel_refine_freqitems_df[, col] = as.character(sel_refine_freqitems_df[, col])
+			}
+			
 			diff_colnames <- "N"
 			ref_sig_case_cont_freqitems_df <- custom_left_join(all_sig_case_cont_freqitems_df, sel_refine_freqitems_df, combo_length = combo_length, diff_colnames = diff_colnames)
 			ref_sig_case_cont_freqitems_df$Cont_Ref_Count_Combo[is.na(ref_sig_case_cont_freqitems_df$Cont_Ref_Count_Combo)] <- 0
