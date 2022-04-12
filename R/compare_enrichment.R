@@ -55,7 +55,7 @@
 #' @import sqldf
 #' @export
 
-compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshold, max_freq_threshold, input_format = 'Input_', output_format = 'Output_', pval_filter_threshold = 0.05, adj_pval_type = 'BH', min_power_threshold = 0.7, sample_names_ind = 'N') {
+compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshold, max_freq_threshold, input_format = 'Input_', output_format = 'Output_', pval_filter_threshold = 0.05, adj_pval_type = 'BH', min_power_threshold = 0.7, sample_names_ind = 'N', quiet=T) {
 
 	# Identify all the input and output variables
 	input_colname_list <- colnames(boolean_input_df)[grepl(paste0("^" ,input_format), colnames(boolean_input_df))]
@@ -90,14 +90,16 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 	support_threshold = min_indv_threshold/dim(apriori_input_cases_df)[1]
 	include_output_ind <- "N"
 
-	case_freqitems_df <- run_apriori_freqitems(apriori_input_cases_df, combo_length , support_threshold, sel_input_colname_list, include_output_ind = include_output_ind)
+	case_freqitems_df <- run_apriori_freqitems(apriori_input_cases_df, combo_length , support_threshold, sel_input_colname_list, include_output_ind = include_output_ind, quiet=quiet)
 	colnames(case_freqitems_df)[dim(case_freqitems_df)[2]] <- 'Case_Obs_Count_Combo'
 
 	unique_items_string <- paste0("unique(c(", paste0("as.character(case_freqitems_df$Item_", 1:combo_length, ")", collapse = ", "), "))")
 	uniq_combo_items <- eval(parse(text=unique_items_string))
 
-	print(paste0('Number of initial combinations identified for cases: ', dim(case_freqitems_df)[1]))
-	print(paste0('Number of unique items in cases: ', length(uniq_combo_items)))
+	if (!quiet) {
+		print(paste0('Number of initial combinations identified for cases: ', dim(case_freqitems_df)[1]))
+		print(paste0('Number of unique items in cases: ', length(uniq_combo_items)))
+	}
 
 	##################################################################################
 	# APRIORI (Individual): Generate frequencies of event for each individual entity #
@@ -105,7 +107,7 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 	support_threshold = min_indv_threshold/dim(apriori_input_cases_df)[1]
 	include_output_ind <- "N"
 
-	case_freqitems_size1_df <- run_apriori_freqitems(apriori_input_cases_df, 1 , support_threshold, uniq_combo_items, include_output_ind = include_output_ind)
+	case_freqitems_size1_df <- run_apriori_freqitems(apriori_input_cases_df, 1 , support_threshold, uniq_combo_items, include_output_ind = include_output_ind, quiet=quiet)
 	colnames(case_freqitems_size1_df)[dim(case_freqitems_size1_df)[2]] <- 'Obs_Count_A'
 
 	diff_colnames <- "Y"
@@ -127,15 +129,19 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 	apriori_input_controls_df <- apriori_input_controls_df[,stringr::str_sort(colnames(apriori_input_controls_df), numeric = TRUE)]
 	apriori_input_controls_df <- as.data.frame(sapply(apriori_input_controls_df, factor))
 	number_of_controls <- dim(apriori_input_controls_df)[1]
-	print(paste0('Number of controls: ', number_of_controls))
+	if (!quiet) {
+		print(paste0('Number of controls: ', number_of_controls))
+	}
 
 	support_threshold = 2/number_of_controls
 	include_output_ind <- "N"
 
-	cont_freqitems_df <- run_apriori_freqitems(apriori_input_controls_df, combo_length , support_threshold, uniq_combo_items, include_output_ind = include_output_ind)
+	cont_freqitems_df <- run_apriori_freqitems(apriori_input_controls_df, combo_length , support_threshold, uniq_combo_items, include_output_ind = include_output_ind, quiet=quiet)
 	colnames(cont_freqitems_df)[dim(cont_freqitems_df)[2]] <- 'Temp_Obs_Count_Combo'
 
-	print(paste0('Number of combinations with support of at least 2 in controls: ', dim(cont_freqitems_df)[1]))
+	if (!quiet) {
+		print(paste0('Number of combinations with support of at least 2 in controls: ', dim(cont_freqitems_df)[1]))
+	}
 
 	##################################################################################
 	# APRIORI (Individual): Generate frequencies of event for each individual entity #
@@ -143,7 +149,7 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 	support_threshold = 1/dim(apriori_input_controls_df)[1]
 	include_output_ind <- "N"
 
-	cont_freqitems_size1_df <- run_apriori_freqitems(apriori_input_controls_df, 1 , support_threshold, uniq_combo_items, include_output_ind = include_output_ind)
+	cont_freqitems_size1_df <- run_apriori_freqitems(apriori_input_controls_df, 1 , support_threshold, uniq_combo_items, include_output_ind = include_output_ind, quiet=quiet)
 	colnames(cont_freqitems_size1_df)[dim(cont_freqitems_size1_df)[2]] <- 'Obs_Count_A'
 
 	diff_colnames <- "N"
@@ -161,8 +167,10 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 
 	sel_case_cont_freqitems_df <- all_case_cont_freqitems_df
 
-	print(paste0('Number of combinations considered for multiple testing correction: ', dim(sel_case_cont_freqitems_df)[1]))
-	
+	if (!quiet) {
+		print(paste0('Number of combinations considered for multiple testing correction: ', dim(sel_case_cont_freqitems_df)[1]))
+	}
+
 	# Create variable for number of tests done
 	number_of_tests = dim(sel_case_cont_freqitems_df)[1]
 
@@ -177,8 +185,9 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 	}
 
 	multtest_sig_comb_count <- dim(all_sig_case_cont_freqitems_df)[1]
-	print(paste0('Number of combinations that are significant after multiple testing correction: ', multtest_sig_comb_count))
-
+	if (!quiet) {
+		print(paste0('Number of combinations that are significant after multiple testing correction: ', multtest_sig_comb_count))
+	}
 
 	#################################################################################################
 	# Check if there is at least a single significant combination after multiple testing correction #
@@ -191,7 +200,9 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 		cont_combos_w_zero_freq_df <- subset(all_sig_case_cont_freqitems_df, all_sig_case_cont_freqitems_df[["Temp_Obs_Count_Combo"]] == 0)
 		zero_freq_combo_count <- dim(cont_combos_w_zero_freq_df)[1]
 
-		print(paste0('Number of combinations with support less than 2 in controls: ', zero_freq_combo_count))
+		if (!quiet) {
+			print(paste0('Number of combinations with support less than 2 in controls: ', zero_freq_combo_count))
+		}
 
 		if (zero_freq_combo_count > 0) {
 
@@ -208,7 +219,7 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 			#######################################################################################################
 			support_threshold = 0
 			include_output_ind <- "N"
-			refine_freqitems_df <- run_apriori_freqitems(apriori_input_controls_df, combo_length, support_threshold, case_uniq_sig_items, include_output_ind = include_output_ind)
+			refine_freqitems_df <- run_apriori_freqitems(apriori_input_controls_df, combo_length, support_threshold, case_uniq_sig_items, include_output_ind = include_output_ind, quiet=quiet)
 			colnames(refine_freqitems_df)[dim(refine_freqitems_df)[2]] <- 'Cont_Ref_Count_Combo'
 			table(refine_freqitems_df$Cont_Ref_Count_Combo)
 			sel_refine_freqitems_df <- subset(refine_freqitems_df, refine_freqitems_df[["Cont_Ref_Count_Combo"]] <= 1)

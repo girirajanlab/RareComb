@@ -27,13 +27,13 @@
 #' @importFrom tidyr separate
 #' @export
 
-run_apriori_freqitems <- function(apriori_input_df, combo_length, support_threshold, input_colname_list, confidence_threshold = confidence_threshold, include_output_ind = include_output_ind, output_colname_list = output_colname_list) {
+run_apriori_freqitems <- function(apriori_input_df, combo_length, support_threshold, input_colname_list, confidence_threshold = confidence_threshold, include_output_ind = include_output_ind, output_colname_list = output_colname_list, quiet=T) {
 
 	trans_input <- as(apriori_input_df, "transactions")
 	if (missing(include_output_ind) || include_output_ind == 'N') {
-		all_apriori_freqitems <- arules::apriori(trans_input, parameter = list(supp = support_threshold, target = "frequent itemsets", minlen = combo_length, maxlen = combo_length, maxtime = 0), appearance = list(items=c(paste0(input_colname_list, "=1"))))
+		all_apriori_freqitems <- arules::apriori(trans_input, parameter = list(supp = support_threshold, target = "frequent itemsets", minlen = combo_length, maxlen = combo_length, maxtime = 0), appearance = list(items=c(paste0(input_colname_list, "=1"))), control=list(verbose = !quiet))
 	} else if (include_output_ind == 'Y') {
-		all_apriori_freqitems <- arules::apriori(trans_input, parameter = list(supp = support_threshold, target = "frequent itemsets", minlen = combo_length, maxlen = combo_length, maxtime = 0), appearance = list(items=c(paste0(input_colname_list, "=1"), paste0(output_colname_list, "=1"))))
+		all_apriori_freqitems <- arules::apriori(trans_input, parameter = list(supp = support_threshold, target = "frequent itemsets", minlen = combo_length, maxlen = combo_length, maxtime = 0), appearance = list(items=c(paste0(input_colname_list, "=1"), paste0(output_colname_list, "=1"))), control=list(verbose = !quiet))
 		all_apriori_freqitems <- subset(all_apriori_freqitems, subset = items %in% c(paste0(output_colname_list, "=1")))
 	}
 		
