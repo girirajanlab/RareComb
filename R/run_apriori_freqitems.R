@@ -29,30 +29,30 @@
 
 run_apriori_freqitems <- function(apriori_input_df, combo_length, support_threshold, input_colname_list, confidence_threshold = confidence_threshold, include_output_ind = include_output_ind, output_colname_list = output_colname_list) {
 
-    trans_input <- as(apriori_input_df, "transactions")
-    if (missing(include_output_ind) || include_output_ind == 'N') {
-      all_apriori_freqitems <- arules::apriori(trans_input, parameter = list(supp = support_threshold, target = "frequent itemsets", minlen = combo_length, maxlen = combo_length, maxtime = 0), appearance = list(items=c(paste0(input_colname_list, "=1"))))
-    } else if (include_output_ind == 'Y') {
-      all_apriori_freqitems <- arules::apriori(trans_input, parameter = list(supp = support_threshold, target = "frequent itemsets", minlen = combo_length, maxlen = combo_length, maxtime = 0), appearance = list(items=c(paste0(input_colname_list, "=1"), paste0(output_colname_list, "=1"))))
-      all_apriori_freqitems <- subset(all_apriori_freqitems, subset = items %in% c(paste0(output_colname_list, "=1")))
-    }
-    
-    # if no freqitems found
-    if (length(all_apriori_freqitems) == 0) {
-      all_apriori_freqitems_df = data.frame(matrix(ncol=length(c(paste0('Item_', seq(1:combo_length)), 'Obs_Count_Combo')), nrow=0))
-      colnames(all_apriori_freqitems_df) = c(paste0('Item_', seq(1:combo_length)), 'Obs_Count_Combo')
-      for (col in colnames(all_apriori_freqitems)[1:length(colnames(all_apriori_freqitems))-1]) {
-        all_apriori_freqitems[, col] = as.character(all_apriori_freqitems[, col])
-      }
-      return(all_apriori_freqitems_df)
-    }
+	trans_input <- as(apriori_input_df, "transactions")
+	if (missing(include_output_ind) || include_output_ind == 'N') {
+		all_apriori_freqitems <- arules::apriori(trans_input, parameter = list(supp = support_threshold, target = "frequent itemsets", minlen = combo_length, maxlen = combo_length, maxtime = 0), appearance = list(items=c(paste0(input_colname_list, "=1"))))
+	} else if (include_output_ind == 'Y') {
+		all_apriori_freqitems <- arules::apriori(trans_input, parameter = list(supp = support_threshold, target = "frequent itemsets", minlen = combo_length, maxlen = combo_length, maxtime = 0), appearance = list(items=c(paste0(input_colname_list, "=1"), paste0(output_colname_list, "=1"))))
+		all_apriori_freqitems <- subset(all_apriori_freqitems, subset = items %in% c(paste0(output_colname_list, "=1")))
+	}
+		
+	# if no freqitems found
+	if (length(all_apriori_freqitems) == 0) {
+		all_apriori_freqitems_df = data.frame(matrix(ncol=length(c(paste0('Item_', seq(1:combo_length)), 'Obs_Count_Combo')), nrow=0))
+		colnames(all_apriori_freqitems_df) = c(paste0('Item_', seq(1:combo_length)), 'Obs_Count_Combo')
+		for (col in colnames(all_apriori_freqitems)[1:length(colnames(all_apriori_freqitems))-1]) {
+			all_apriori_freqitems[, col] = as.character(all_apriori_freqitems[, col])
+		}
+		return(all_apriori_freqitems_df)
+	}
 
-    all_apriori_freqitems_df <- arules::DATAFRAME(all_apriori_freqitems)
-    all_apriori_freqitems_df$items <- stringr::str_replace_all(all_apriori_freqitems_df$items, "[{}]", "")
-    all_apriori_freqitems_df$items <- stringr::str_replace_all(all_apriori_freqitems_df$items, "=1", "")
-    all_apriori_freqitems_df <- tidyr::separate(data = all_apriori_freqitems_df, col = items, into = c(paste0("Item_", 1:combo_length)), sep = ",")
-    all_apriori_freqitems_df <- subset(all_apriori_freqitems_df, select = c(paste0('Item_', seq(1:combo_length)), 'count'))
-    colnames(all_apriori_freqitems_df)[dim(all_apriori_freqitems_df)[2]] <- 'Obs_Count_Combo'
+	all_apriori_freqitems_df <- arules::DATAFRAME(all_apriori_freqitems)
+	all_apriori_freqitems_df$items <- stringr::str_replace_all(all_apriori_freqitems_df$items, "[{}]", "")
+	all_apriori_freqitems_df$items <- stringr::str_replace_all(all_apriori_freqitems_df$items, "=1", "")
+	all_apriori_freqitems_df <- tidyr::separate(data = all_apriori_freqitems_df, col = items, into = c(paste0("Item_", 1:combo_length)), sep = ",")
+	all_apriori_freqitems_df <- subset(all_apriori_freqitems_df, select = c(paste0('Item_', seq(1:combo_length)), 'count'))
+	colnames(all_apriori_freqitems_df)[dim(all_apriori_freqitems_df)[2]] <- 'Obs_Count_Combo'
 
-  return(all_apriori_freqitems_df)
+	return(all_apriori_freqitems_df)
 }
