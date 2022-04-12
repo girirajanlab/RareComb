@@ -176,18 +176,31 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 
 	sel_case_cont_freqitems_df$Case_Adj_Pval_bonf <- round(p.adjust(sel_case_cont_freqitems_df$Case_pvalue_more , "bonferroni"), 3)
 	sel_case_cont_freqitems_df$Case_Adj_Pval_BH <- round(p.adjust(sel_case_cont_freqitems_df$Case_pvalue_more , "BH"), 3)
+	sel_case_cont_freqitems_df$Num_tests <- number_of_tests
 
 
 	if (adj_pval_type == 'BH') {
 		all_sig_case_cont_freqitems_df <- subset(sel_case_cont_freqitems_df, sel_case_cont_freqitems_df[["Case_Adj_Pval_BH"]] < pval_filter_threshold & sel_case_cont_freqitems_df[["Temp_Control_pvalue_more"]] > pval_filter_threshold)
+		all_sig_case_cont_freqitems_df[,'Fail_Control_Pvalue'] = F
+		multtest_sig_comb_count <- dim(all_sig_case_cont_freqitems_df)[1]
 	} else if (adj_pval_type == 'bonferroni') {
 		all_sig_case_cont_freqitems_df <- subset(sel_case_cont_freqitems_df, sel_case_cont_freqitems_df[["Case_Adj_Pval_bonf"]] < pval_filter_threshold & sel_case_cont_freqitems_df[["Temp_Control_pvalue_more"]] > pval_filter_threshold)
+		all_sig_case_cont_freqitems_df[,'Fail_Control_Pvalue'] = F
+		multtest_sig_comb_count <- dim(all_sig_case_cont_freqitems_df)[1]
+	} else if (adj_pval_type == 'none') {
+		all_sig_case_cont_freqitems_df = sel_case_cont_freqitems_df
+		all_sig_case_cont_freqitems_df[,'Fail_Control_Pvalue'] = sel_case_cont_freqitems_df$Temp_Control_pvalue_more <= pval_filter_threshold
+		multtest_sig_comb_count <- dim(subset(all_sig_case_cont_freqitems_df, all_sig_case_cont_freqitems_df[["Case_pvalue_more"]] < pval_filter_threshold & all_sig_case_cont_freqitems_df[["Temp_Control_pvalue_more"]] > pval_filter_threshold))[1]
+	} else {
+		stop('Error: Possible options for adj_pval_type: BH, bonferroni, none')
 	}
 
-	multtest_sig_comb_count <- dim(all_sig_case_cont_freqitems_df)[1]
+	
 	if (!quiet) {
-		print(paste0('Number of combinations that are significant after multiple testing correction: ', multtest_sig_comb_count))
+		print(paste0('Number of combinations that are significant after multiple testing correction using ', adj_pval_type,': ', multtest_sig_comb_count))
 	}
+
+
 
 	#################################################################################################
 	# Check if there is at least a single significant combination after multiple testing correction #
@@ -252,16 +265,19 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 		significant_case_cont_freqitems_df$Power_One_Pct <- round(as.numeric(mapply(function(e,n1,n2, ...){pwr.2p2n.test(e, n1, n2, ...)$power}, e = significant_case_cont_freqitems_df$Effect_Size, n1 = number_of_cases, n2 = number_of_controls, sig.level = 0.01)), 3)
 		significant_case_cont_freqitems_df$Power_Five_Pct <- round(as.numeric(mapply(function(e,n1,n2, ...){pwr.2p2n.test(e, n1, n2, ...)$power}, e = significant_case_cont_freqitems_df$Effect_Size, n1 = number_of_cases, n2 = number_of_controls, sig.level = 0.05)), 3)
 
-		select_cols_string <- paste0("significant_case_cont_freqitems_df[order(-significant_case_cont_freqitems_df$Power_Five_Pct, -significant_case_cont_freqitems_df$Effect_Size), c(", paste0("'Item_", 1:combo_length, "'", collapse = ","), ",", paste0("'Case_Obs_Count_I", 1:combo_length, "'", collapse = ","), ",",  "'Case_Exp_Prob_Combo', 'Case_Obs_Prob_Combo','Case_Exp_Count_Combo', 'Case_Obs_Count_Combo', 'Case_pvalue_more'", ",", paste0("'Cont_Obs_Count_I", 1:combo_length, "'", collapse = ","), ",", "'Cont_Exp_Prob_Combo', 'Cont_Obs_Prob_Combo', 'Cont_Exp_Count_Combo','Cont_Obs_Count_Combo', 'Control_pvalue_more', 'Case_Adj_Pval_BH', 'Case_Adj_Pval_bonf', 'Effect_Size', 'Power_One_Pct', 'Power_Five_Pct'", ")]")
+		select_cols_string <- paste0("significant_case_cont_freqitems_df[order(-significant_case_cont_freqitems_df$Power_Five_Pct, -significant_case_cont_freqitems_df$Effect_Size), c(", paste0("'Item_", 1:combo_length, "'", collapse = ","), ",", paste0("'Case_Obs_Count_I", 1:combo_length, "'", collapse = ","), ",",  "'Case_Exp_Prob_Combo', 'Case_Obs_Prob_Combo','Case_Exp_Count_Combo', 'Case_Obs_Count_Combo', 'Case_pvalue_more'", ",", paste0("'Cont_Obs_Count_I", 1:combo_length, "'", collapse = ","), ",", "'Cont_Exp_Prob_Combo', 'Cont_Obs_Prob_Combo', 'Cont_Exp_Count_Combo','Cont_Obs_Count_Combo', 'Control_pvalue_more', 'Case_Adj_Pval_BH', 'Case_Adj_Pval_bonf', 'Num_tests', 'Fail_Control_Pvalue', 'Effect_Size', 'Power_One_Pct', 'Power_Five_Pct'", ")]")
 		output_sig_case_cont_freqitems_df <- eval(parse(text = select_cols_string))
 
-		output_sig_case_cont_freqitems_df <- subset(output_sig_case_cont_freqitems_df, output_sig_case_cont_freqitems_df[["Power_Five_Pct"]] >= min_power_threshold)
+		if (adj_pval_type == 'none') {
+			output_sig_case_cont_freqitems_df$Fail_Power = output_sig_case_cont_freqitems_df$Power_Five_Pct < min_power_threshold
+		} else {
+			output_sig_case_cont_freqitems_df <- subset(output_sig_case_cont_freqitems_df, output_sig_case_cont_freqitems_df[["Power_Five_Pct"]] >= min_power_threshold)
+			output_sig_case_cont_freqitems_df$Fail_Power = F
+		}
 
 
 		if (dim(output_sig_case_cont_freqitems_df)[1] > 0) {
 			if (sample_names_ind == 'N') {
-				# add a column for number of tests done
-				output_sig_case_cont_freqitems_df['Num_tests'] = number_of_tests
 				
 				# Return the output without adding sample names
 				output_sig_case_cont_freqitems_df
@@ -322,9 +338,6 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 					find_samples_step7_df <- reshape2::dcast(find_samples_step6_df, Item_1 + Item_2 + Item_3 + Item_4 + Item_5 ~ Sample_Type, value.var = "Sample_List")
 					out_sig_case_cont_freqitems_w_samples_df <- dplyr::left_join(output_sig_case_cont_freqitems_df, find_samples_step7_df, by = c("Item_1", "Item_2", "Item_3", "Item_4", "Item_5"))
 				}
-				
-				# add a column for number of tests done
-				out_sig_case_cont_freqitems_w_samples_df['Num_tests'] = number_of_tests
 
 				# Return all significant combinations with corresponding sample names as the output
 				out_sig_case_cont_freqitems_w_samples_df
@@ -332,11 +345,6 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 
 
 		} else {
-			warning("No significant combinations that meet the specified power threshold")
-			warning("Returning ONLY the non-significant combinations")
-
-			# add a column for number of tests done
-			sel_case_cont_freqitems_df['Num_tests'] = number_of_tests
 
 			# Return all non-significant combinations as the output
 			sel_case_cont_freqitems_df
@@ -344,11 +352,6 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 
 
 	} else {
-		warning("No significant combinations were found after multiple testing correction")
-		warning("Returning ONLY the non-significant combinations")
-		
-		# add a column for number of tests done
-		sel_case_cont_freqitems_df['Num_tests'] = number_of_tests
 		
 		# Return all non-significant combinations as the output
 		sel_case_cont_freqitems_df
