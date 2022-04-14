@@ -69,6 +69,10 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 	tmp_apriori_input_cases_df <- as.data.frame(sapply(tmp_apriori_input_cases_df, as.numeric))
 	tmp_apriori_input_controls_df <- as.data.frame(sapply(tmp_apriori_input_controls_df, as.numeric))
 
+	# clean up
+	rm(boolean_input_df)
+	gc()
+
 	number_of_cases <- dim(tmp_apriori_input_cases_df)[1]
 	max_instances <- round(number_of_cases * max_freq_threshold)
 
@@ -81,6 +85,11 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 	apriori_input_controls_df <- as.data.frame(sapply(apriori_input_controls_df, factor))
 
 	sel_input_colname_list <- colnames(apriori_input_cases_df)[grepl(paste0("^" ,input_format), colnames(apriori_input_cases_df))]
+
+	# clean up
+	rm(tmp_apriori_input_cases_df)
+	rm(tmp_apriori_input_controls_df)
+	gc()
 
 	############################
 	# CASES / SEVERE Phenotype #
@@ -101,6 +110,7 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 		print(paste0('Number of unique items in cases: ', length(uniq_combo_items)))
 	}
 
+
 	##################################################################################
 	# APRIORI (Individual): Generate frequencies of event for each individual entity #
 	##################################################################################
@@ -119,6 +129,7 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 
 	all_case_freqitems_df$Case_Obs_Prob_Combo <- all_case_freqitems_df$Case_Obs_Count_Combo/number_of_cases
 	all_case_freqitems_df$Case_pvalue_more <- as.numeric(mapply(function(x,p,n, ...){binom.test(x, n, p, ...)$p.value}, x = all_case_freqitems_df$Case_Obs_Count_Combo, n = number_of_cases, p = all_case_freqitems_df$Case_Exp_Prob_Combo, alternative = "greater", conf.level = 0.95, SIMPLIFY = FALSE))
+
 
 	#############################
 	# CONTROLS / MILD Phenotype #
@@ -142,6 +153,7 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 	if (!quiet) {
 		print(paste0('Number of combinations with support of at least 2 in controls: ', dim(cont_freqitems_df)[1]))
 	}
+
 
 	##################################################################################
 	# APRIORI (Individual): Generate frequencies of event for each individual entity #
@@ -199,7 +211,6 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 	if (!quiet) {
 		print(paste0('Number of combinations that are significant after multiple testing correction using ', adj_pval_type,': ', multtest_sig_comb_count))
 	}
-
 
 
 	#################################################################################################
@@ -286,6 +297,11 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 				apriori_input_cases_w_samples_df <- cbind(apriori_input_cases_df, cases_sample_list)
 				apriori_input_controls_w_samples_df <- cbind(apriori_input_controls_df, controls_sample_list)
 
+				# clean up
+				rm(apriori_input_cases_df)
+				rm(apriori_input_controls_df)
+				gc()
+
 				input_by_sample_cases_df <- reshape2::melt(apriori_input_cases_w_samples_df, id = "Sample_Name")
 				input_by_sample_cases_df <- input_by_sample_cases_df[input_by_sample_cases_df$value > 0, !(names(input_by_sample_cases_df) %in% c("value"))]
 				input_by_sample_cases_df$Sample_Type <- 'Case_Samples'
@@ -296,6 +312,14 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 
 				input_by_sample_df <- rbind(input_by_sample_cases_df, input_by_sample_controls_df)
 				input_by_sample_df[] <- lapply(input_by_sample_df, as.character)
+
+				# clean up
+				rm(apriori_input_cases_w_samples_df)
+				rm(apriori_input_controls_w_samples_df)
+				rm(input_by_sample_cases_df)
+				rm(input_by_sample_controls_df)
+				gc()
+
 
 				if (combo_length == 2) {
 					 sig_combos_df <- subset(output_sig_case_cont_freqitems_df, select = c("Item_1", "Item_2"))
