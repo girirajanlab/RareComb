@@ -193,11 +193,15 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 
 	if (adj_pval_type == 'BH') {
 		all_sig_case_cont_freqitems_df <- subset(sel_case_cont_freqitems_df, sel_case_cont_freqitems_df[["Case_Adj_Pval_BH"]] < pval_filter_threshold & sel_case_cont_freqitems_df[["Temp_Control_pvalue_more"]] > pval_filter_threshold)
-		all_sig_case_cont_freqitems_df[,'Fail_Control_Pvalue'] = F
+		if (dim(all_sig_case_cont_freqitems_df)[1] > 0) {	
+			all_sig_case_cont_freqitems_df[,'Fail_Control_Pvalue'] = F
+		}
 		multtest_sig_comb_count <- dim(all_sig_case_cont_freqitems_df)[1]
 	} else if (adj_pval_type == 'bonferroni') {
 		all_sig_case_cont_freqitems_df <- subset(sel_case_cont_freqitems_df, sel_case_cont_freqitems_df[["Case_Adj_Pval_bonf"]] < pval_filter_threshold & sel_case_cont_freqitems_df[["Temp_Control_pvalue_more"]] > pval_filter_threshold)
-		all_sig_case_cont_freqitems_df[,'Fail_Control_Pvalue'] = F
+		if (dim(all_sig_case_cont_freqitems_df)[1] > 0) {	
+			all_sig_case_cont_freqitems_df[,'Fail_Control_Pvalue'] = F
+		}
 		multtest_sig_comb_count <- dim(all_sig_case_cont_freqitems_df)[1]
 	} else if (adj_pval_type == 'none') {
 		all_sig_case_cont_freqitems_df = sel_case_cont_freqitems_df
@@ -283,7 +287,9 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 			output_sig_case_cont_freqitems_df$Fail_Power = output_sig_case_cont_freqitems_df$Power_Five_Pct < min_power_threshold
 		} else {
 			output_sig_case_cont_freqitems_df <- subset(output_sig_case_cont_freqitems_df, output_sig_case_cont_freqitems_df[["Power_Five_Pct"]] >= min_power_threshold)
-			output_sig_case_cont_freqitems_df$Fail_Power = F
+			if (dim(output_sig_case_cont_freqitems_df)[1] > 0) {
+				output_sig_case_cont_freqitems_df$Fail_Power = F
+			}
 		}
 
 
