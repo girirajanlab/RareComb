@@ -73,7 +73,7 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 	rm(boolean_input_df)
 	gc()
 
-	number_of_cases <- dim(tmp_apriori_input_cases_df)[1]
+	number_of_cases <- as.numeric(dim(tmp_apriori_input_cases_df)[1])
 	max_instances <- round(number_of_cases * max_freq_threshold)
 
 	apriori_input_cases_df <- tmp_apriori_input_cases_df[,((colSums(tmp_apriori_input_cases_df) >= min_indv_threshold & colSums(tmp_apriori_input_controls_df) >= 1 & colSums(tmp_apriori_input_cases_df) < max_instances))]
@@ -139,7 +139,7 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 	apriori_input_controls_df <- apriori_input_controls_df[,uniq_combo_items]
 	apriori_input_controls_df <- apriori_input_controls_df[,stringr::str_sort(colnames(apriori_input_controls_df), numeric = TRUE)]
 	apriori_input_controls_df <- as.data.frame(sapply(apriori_input_controls_df, factor))
-	number_of_controls <- dim(apriori_input_controls_df)[1]
+	number_of_controls <- as.numeric(dim(apriori_input_controls_df)[1])
 	if (!quiet) {
 		print(paste0('Number of controls: ', number_of_controls))
 	}
