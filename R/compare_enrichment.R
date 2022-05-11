@@ -56,11 +56,10 @@
 #' @import glue
 #' @export
 
-compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshold, max_freq_threshold, input_format = 'Input_', output_format = 'Output_', pval_filter_threshold = 0.05, adj_pval_type = 'BH', min_power_threshold = 0.7, sample_names_ind = 'N', quiet=T) {
+compare_enrichment <- function(boolean_input_df, gene_coordinates_df, combo_length, min_indv_threshold, max_freq_threshold, input_format = 'Input_', output_format = 'Output_', pval_filter_threshold = 0.05, adj_pval_type = 'BH', min_power_threshold = 0.7, sample_names_ind = 'N', ld_block_size=0, quiet=T) {
 	
 	
-	print(glue('{sample_names_ind}'))
-	return('hi')
+
 
 	# Identify all the input and output variables
 	input_colname_list <- colnames(boolean_input_df)[grepl(paste0("^" ,input_format), colnames(boolean_input_df))]
@@ -106,6 +105,47 @@ compare_enrichment <- function(boolean_input_df, combo_length, min_indv_threshol
 
 	case_freqitems_df <- run_apriori_freqitems(apriori_input_cases_df, combo_length , support_threshold, sel_input_colname_list, include_output_ind = include_output_ind, quiet=quiet)
 	colnames(case_freqitems_df)[dim(case_freqitems_df)[2]] <- 'Case_Obs_Count_Combo'
+
+
+	#################################################
+	# remove combos with genes within ld_block_size #
+	#################################################
+	
+	gene_coordinates_df[,'Gene'] = unlist(lapply(gene_coordinates_df[,'Gene'], function(x) paste0(input_format, x)))
+	rownames(gene_coordinates_df) = gene_coordinates_df[,'Gene'] 
+	
+	
+	# get locations of genes
+	for (i in 1:combo_length) {
+		case_freqitems_df[, glue('Item_{i}_chrom')] = gene_coordinates_df[case_freqitems_df[, glue('Item_{i}')],][,'Chrom']
+	  case_freqitems_df[, glue('Item_{i}_start')] = gene_coordinates_df[case_freqitems_df[, glue('Item_{i}')],][,'Start']
+	  case_freqitems_df[, glue('Item_{i}_end')] = gene_coordinates_df[case_freqitems_df[, glue('Item_{i}')],][,'End']
+	}
+
+	size_before_removing_ld_combos = dim(case_freqitems_df)[1]
+
+	for (j in 1:combo_length) {
+			for (k in 1:combo_length) {
+			if (j == k) break
+			print(glue('{j} {k}'))
+			same_chrom = (case_freqitems_df[,glue('Item_{j}_chrom')] == case_freqitems_df[, glue('Item_{k}_chrom')])
+			max_start = pmax(case_freqitems_df[, glue('Item_{j}_start')], case_freqitems_df[, glue('Item_{k}_start')])
+			min_end = pmin(case_freqitems_df[, glue('Item_{j}_end')], case_freqitems_df[, glue('Item_{k}_end')])
+
+			rows_to_remove = same_chrom & (max_start - min_end < ld_block_size)
+			case_freqitems_df = case_freqitems_df[ !rows_to_remove,]
+
+			
+		}
+	}
+
+	
+	if (!quiet) {
+		print(paste0('Number of initial combinations identified for cases: ', size_before_removing_ld_combos))
+		print(paste0('Number of combinations after filtering for linkage disequilibrium: ', dim(case_freqitems_df)[1]))
+	}
+
+	
 
 	unique_items_string <- paste0("unique(c(", paste0("as.character(case_freqitems_df$Item_", 1:combo_length, ")", collapse = ", "), "))")
 	uniq_combo_items <- eval(parse(text=unique_items_string))
