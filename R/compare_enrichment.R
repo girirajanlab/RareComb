@@ -130,8 +130,9 @@ compare_enrichment <- function(boolean_input_df, gene_coordinates_df, combo_leng
 				same_chrom = (case_freqitems_df[,glue('Item_{j}_chrom')] == case_freqitems_df[, glue('Item_{k}_chrom')])
 				max_start = pmax(case_freqitems_df[, glue('Item_{j}_start')], case_freqitems_df[, glue('Item_{k}_start')])
 				min_end = pmin(case_freqitems_df[, glue('Item_{j}_end')], case_freqitems_df[, glue('Item_{k}_end')])
-
-				rows_to_remove = same_chrom & (max_start - min_end < ld_block_size)
+				has_positions = (!is.na(case_freqitems_df[,glue('Item_{j}_chrom')])) & (!is.na(case_freqitems_df[,glue('Item_{k}_chrom')]))
+				
+				rows_to_remove = same_chrom & (max_start - min_end < ld_block_size) & has_positions
 				case_freqitems_df = case_freqitems_df[ !rows_to_remove,]
 		}
 	}
