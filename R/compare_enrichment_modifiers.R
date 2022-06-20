@@ -56,7 +56,7 @@
 #' @import glue
 #' @export
 
-compare_enrichment_modifiers <- function(boolean_input_df, gene_coordinates_df, primary_input_entities, combo_length, min_indv_threshold, max_freq_threshold, input_format = 'Input_', output_format = 'Output_', pval_filter_threshold = 0.05, adj_pval_type = 'BH', min_power_threshold = 0.7, sample_names_ind = 'N', ld_block_size=0, quiet=T) {
+compare_enrichment_modifiers <- function(boolean_input_df, gene_coordinates_df, primary_input_entities, secondary_input_entities, combo_length, min_indv_threshold, max_freq_threshold, input_format = 'Input_', output_format = 'Output_', pval_filter_threshold = 0.05, adj_pval_type = 'BH', min_power_threshold = 0.7, sample_names_ind = 'N', ld_block_size=0, quiet=T) {
     
     
 
@@ -154,9 +154,16 @@ compare_enrichment_modifiers <- function(boolean_input_df, gene_coordinates_df, 
     }
 
     case_freqitems_df = case_freqitems_df[rows_to_keep,]
+    
+    rows_to_keep = case_freqitems_df[,'Item_1'] %in% secondary_input_entities
+    for (i in 1:combo_length) {
+    rows_to_keep = (rows_to_keep) | (case_freqitems_df[,glue('Item_{i}')] %in% secondary_input_entities)
+    }
+
+    case_freqitems_df = case_freqitems_df[rows_to_keep,]
 
     if (!quiet) {
-    print(paste0('Number of combinations after filtering for primary_input_entities: ', dim(case_freqitems_df)[1]))
+    print(paste0('Number of combinations after filtering for primary_input_entities and secondary_input_entities: ', dim(case_freqitems_df)[1]))
     }
 
     ###########################################################
